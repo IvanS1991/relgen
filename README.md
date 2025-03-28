@@ -22,6 +22,8 @@ relgen --help
 
 ## Installation
 
+[Archives of precompiled binaries for relgen are available for Windows, macOS and Linux.](https://github.com/Luladjiev/relgen/releases)
+
 ### Using Cargo
 
 Installing `relgen` through Cargo is the easiest way to get started. You can install it by running the following
