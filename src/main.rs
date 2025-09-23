@@ -31,6 +31,8 @@ pub struct Args {
     repo: Vec<String>,
     #[arg(long, help = "List of reviewers to add to each Pull Request")]
     reviewer: Vec<String>,
+    #[arg(long, help = "Dry run mode, no Pull Requests will be created")]
+    dry_run: bool,
 }
 
 #[tokio::main]
@@ -51,6 +53,7 @@ async fn run(token: String, args: Args) {
     let head = args.head;
     let repositories = args.repo;
     let reviewers = args.reviewer;
+    let dry_run = args.dry_run;
 
     let octocrab = Octocrab::builder()
         .personal_token(token)
@@ -65,7 +68,7 @@ async fn run(token: String, args: Args) {
 
             for repo in repos {
                 responses.push(create_pr(
-                    &octocrab, &owner, repo, &base, &base_name, &head, &reviewers,
+                    &octocrab, &owner, repo, &base, &base_name, &head, &reviewers, dry_run,
                 ));
             }
 
@@ -149,6 +152,7 @@ async fn create_pr(
     base_name: &Option<String>,
     head: &String,
     reviewers: &[String],
+    dry_run: bool,
 ) -> Result<(), String> {
     let res = octocrab
         .pulls(owner, &repo)
@@ -162,11 +166,17 @@ async fn create_pr(
     match res {
         Ok(pr) => {
             if !pr.items.is_empty() {
-                println!("{repo} already has an opened Pull request");
+                pr.items.iter().for_each(|item| {
+                    println!("{repo} already has an opened Pull request: https://github.com/{owner}/{repo}/pull/{}", item.number);
+                });
                 return Ok(());
             }
 
             println!("Creating Pull request for {repo}...");
+
+            if dry_run {
+                return Ok(());
+            }
 
             let date = chrono::Local::now().format("%Y-%m-%d").to_string();
 
