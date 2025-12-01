@@ -1,11 +1,11 @@
-use octocrab::{Octocrab,Result,GitHubError};
-use octocrab::params::State;
-use futures::future::join_all;
-use std::error::Error;
 use crate::models::github::Response;
+use futures::future::join_all;
+use octocrab::params::State;
+use octocrab::{GitHubError, Octocrab, Result};
+use std::error::Error;
 
 pub struct GitHub<'a> {
-  pub octocrab: &'a Octocrab,
+    pub octocrab: &'a Octocrab,
 }
 
 impl<'a> GitHub<'a> {
@@ -67,7 +67,8 @@ impl<'a> GitHub<'a> {
         reviewers: &[String],
         dry_run: bool,
     ) -> Result<(), String> {
-        let res = &self.octocrab
+        let res = &self
+            .octocrab
             .pulls(owner, &repo)
             .list()
             .state(State::Open)
@@ -98,7 +99,8 @@ impl<'a> GitHub<'a> {
                     Some(name) => name,
                 };
 
-                let res = &self.octocrab
+                let res = &self
+                    .octocrab
                     .pulls(owner, &repo)
                     .create(format!("Release to {name} {date}"), head, base)
                     .send()
@@ -111,9 +113,12 @@ impl<'a> GitHub<'a> {
                             pr.number
                         );
 
-                       self.request_review(owner, &repo, reviewers, pr.number).await
+                        self.request_review(owner, &repo, reviewers, pr.number)
+                            .await
                     }
-                    Err(e) => self.generate_error(format!("Failed creating a Pull Request in {repo}"), &e),
+                    Err(e) => {
+                        self.generate_error(format!("Failed creating a Pull Request in {repo}"), &e)
+                    }
                 }
             }
             Err(e) => self.generate_error(format!("Failed to fetch {repo}'s pull requests."), &e),
@@ -127,7 +132,8 @@ impl<'a> GitHub<'a> {
         reviewers: &[String],
         pr_id: u64,
     ) -> Result<(), String> {
-        let res = &self.octocrab
+        let res = &self
+            .octocrab
             .pulls(owner, repo)
             .request_reviews(pr_id, reviewers, [])
             .await;
